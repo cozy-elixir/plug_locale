@@ -40,7 +40,7 @@ defmodule PlugLocale.WebBrowser do
         plug :set_locale
       
         def set_locale(conn, _opts) do
-          if locale conn.assigns[:locale] do
+          if locale = conn.assigns[:locale] do
             # integrate with gettext
             Gettext.put_locale(locale)
           end
