@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/cozy-elixir/plug_locale/actions/workflows/ci.yml/badge.svg)](https://github.com/cozy-elixir/plug_locale/actions/workflows/ci.yml)
 [![Hex.pm](https://img.shields.io/hexpm/v/plug_locale.svg)](https://hex.pm/packages/plug_locale)
+[![built with Nix](https://img.shields.io/badge/built%20with%20Nix-5277C3?logo=nixos&logoColor=white)](https://builtwithnix.org)
 
 Plugs for putting locale into `assigns` storage.
 
