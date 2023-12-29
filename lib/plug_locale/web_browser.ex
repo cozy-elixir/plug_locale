@@ -33,7 +33,9 @@ defmodule PlugLocale.WebBrowser do
       
         plug PlugLocale.WebBrowser,
           default_locale: "en",
-          locales: ["en", "zh"]
+          locales: ["en", "zh"],
+          route_identifier: :locale,
+          assign_key: :locale
       
         plug :set_locale
       
@@ -58,11 +60,7 @@ defmodule PlugLocale.WebBrowser do
 
           # ...
 
-          plug PlugLocale.WebBrowser
-            default_locale: "en",
-            locales: ["en", "zh"],
-            route_identifier: :locale,
-            assign_key: :locale
+          plug DemoWeb.PlugWebBrowserLocalization
 
           # ...
         end
@@ -73,7 +71,9 @@ defmodule PlugLocale.WebBrowser do
           get "/", PageController, :index
           # ...
         end
-      
+
+        # Why using :locale?
+        # Because it is specified by `:route_identifier` option.
         scope "/:locale", DemoWeb do
           pipe_through :browser
 
@@ -150,8 +150,8 @@ defmodule PlugLocale.WebBrowser do
   @behaviour Plug
   import Plug.Conn
 
-  alias PlugLocale.Config
-  alias PlugLocale.WebBrowser.AcceptLanguage
+  alias __MODULE__.Config
+  alias __MODULE__.AcceptLanguage
 
   @impl true
   def init(opts), do: Config.new!(opts)

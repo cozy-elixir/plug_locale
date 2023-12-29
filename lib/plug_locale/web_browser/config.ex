@@ -1,4 +1,4 @@
-defmodule PlugLocale.Config do
+defmodule PlugLocale.WebBrowser.Config do
   @moduledoc false
 
   defstruct [
