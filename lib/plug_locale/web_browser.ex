@@ -103,6 +103,29 @@ defmodule PlugLocale.WebBrowser do
 
     * `build_localized_path/2`
 
+  ### an example UI component - simple locale switcher
+
+  ```heex
+  <ul>
+    <li>
+      <a
+        href={PlugLocale.WebBrowser.build_localized_path(@conn, "en")}
+        aria-label="switch to locale - en"
+      >
+        English
+      </a>
+    </li>
+    <li>
+      <a
+        href={PlugLocale.WebBrowser.build_localized_path(@conn, "zh")}
+        aria-label="switch to locale - zh"
+      >
+        中文
+      </a>
+    </li>
+  </ul>
+  ```
+
   ## How it works?
 
   This plug will try to:
