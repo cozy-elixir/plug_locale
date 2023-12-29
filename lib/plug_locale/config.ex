@@ -1,4 +1,6 @@
 defmodule PlugLocale.Config do
+  @moduledoc false
+
   defstruct [
     :default_locale,
     :locales,

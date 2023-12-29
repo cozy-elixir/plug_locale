@@ -1,5 +1,8 @@
 # PlugLocale
 
+[![CI](https://github.com/cozy-elixir/plug_locale/actions/workflows/ci.yml/badge.svg)](https://github.com/cozy-elixir/plug_locale/actions/workflows/ci.yml)
+[![Hex.pm](https://img.shields.io/hexpm/v/plug_locale.svg)](https://hex.pm/packages/plug_locale)
+
 Plugs for putting locale into `assigns` storage.
 
 ## Installation
@@ -22,6 +25,12 @@ Different from [`set_locale`](https://hex.pm/packages/set_locale), [`ex_cldr_plu
 - does not make any assumptions about the localization strategy, so it is not tightly bound to packages like [`gettext`](https://hex.pm/packages/gettext) or [`ex_cldr`](https://hex.pm/packages/ex_cldr).
 
 Check out `PlugLocale.WebBrowser`, `PlugLocale.HTTP` in [documentation](https://hexdocs.pm/plug_locale) for more details.
+
+## Thanks
+
+This library is built on the wisdom in following code:
+
+- [`set_locale`](https://hex.pm/packages/set_locale)
 
 ## License
 
