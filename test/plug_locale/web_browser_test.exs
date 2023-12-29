@@ -121,5 +121,6 @@ defmodule PlugLocale.WebBrowserTest do
     end
   end
 
+  # credo:disable-for-next-line
   # TODO: add tests for Phoenix router
 end

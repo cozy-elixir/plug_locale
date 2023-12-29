@@ -317,6 +317,7 @@ defmodule PlugLocale.WebBrowser do
          } = _conn,
          _config
        ) do
+    # credo:disable-for-next-line 
     # TODO: add warning for unfetched cookies
     nil
   end
