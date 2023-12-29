@@ -88,41 +88,13 @@ defmodule PlugLocale.WebBrowser do
     * `:locales` - all the supported locales. Default to `[]`.
     * `:sanitize_locale` - a function for sanitizing extracted or detected
       locales. Default to `&PlugLocale.Sanitizer.sanitize/1` which does
-      nothing.
+      nothing. See `PlugLocale.Sanitizer` for more details.
     * `:route_identifier` - the part for identifying locale in route.
       Default to `:locale`.
     * `:assign_key` - the key for putting value into `assigns` storage.
       Default to the value of `:route_identifier` option.
     * `:cookie_key` - the key for reading locale from cookie.
       Default to `"preferred_locale"`.
-
-  ### about `:sanitize_locale` option
-
-  As the option name implies, the option is for sanitizing given locale.
-
-  The default value is a function like `fn x -> x end`, which does nothing.
-  But, in practice, you will need to set it to something meaningful. For
-  example:
-
-      def sanitize(locale) do
-        case locale do
-          # explicit matching on supported locales
-          locale when locale in ["en", "zh"] ->
-            locale
-
-          # fuzzy matching on en locale
-          "en-" <> _ ->
-            "en"
-      
-          # fuzzy matching on zh locale
-          "zh-" <> _ ->
-            "zh"
-            
-          # fallback for unsupported locales
-          _ ->
-            "en"
-        end
-      end
 
   ## How it works?
 
