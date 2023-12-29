@@ -2,6 +2,8 @@ defmodule PlugLocale.Header do
   @moduledoc """
   Puts locale into `assigns` storage according to given HTTP request header.
 
+  > This is generally used by HTTP API for clients like mobile apps.
+
   By default, the used HTTP request header is `x-client-locale`. Although
   there's a standard HTTP header - `accept-language`, but it is better to
   use a custom header, because it is simpler and has no historical baggage
