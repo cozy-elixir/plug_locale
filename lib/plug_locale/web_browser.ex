@@ -96,6 +96,13 @@ defmodule PlugLocale.WebBrowser do
     * `:cookie_key` - the key for reading locale from cookie.
       Default to `"preferred_locale"`.
 
+  ## Helper functions
+
+  `#{inspect(__MODULE__)}` also provides some helper functions, which will be useful
+  when implementing UI components:
+
+    * `build_localized_path/2`
+
   ## How it works?
 
   This plug will try to:
@@ -153,6 +160,8 @@ defmodule PlugLocale.WebBrowser do
   alias __MODULE__.Config
   alias __MODULE__.AcceptLanguage
 
+  @private_key :plug_locale
+
   @impl true
   def init(opts), do: Config.new!(opts)
 
@@ -168,8 +177,30 @@ defmodule PlugLocale.WebBrowser do
     end
   end
 
+  @doc """
+  Builds a localized path for current path.
+
+  ## Examples
+
+      # the request path of conn is /posts/7
+      iex> build_localized_path(conn, "en")
+      "/en/posts/7"
+
+      # the request path of conn is /en/posts/7
+      iex> build_localized_path(conn, "zh")
+      "/zh/posts/7"
+
+  """
+  @spec build_localized_path(Plug.Conn.t(), String.t()) :: String.t()
+  def build_localized_path(conn, locale) do
+    %{config: config} = Map.fetch!(conn.private, @private_key)
+    build_locale_path(conn, config, locale)
+  end
+
   defp continue(conn, config, locale) do
-    assign(conn, config.assign_key, locale)
+    conn
+    |> put_private(@private_key, %{config: config})
+    |> assign(config.assign_key, locale)
   end
 
   defp fallback(conn, config) do
@@ -279,7 +310,7 @@ defmodule PlugLocale.WebBrowser do
     }
   end
 
-  def redirect_to(conn, path) do
+  defp redirect_to(conn, path) do
     url = path
     html = Plug.HTML.html_escape(url)
     body = "<html><body>You are being <a href=\"#{html}\">redirected</a>.</body></html>"
