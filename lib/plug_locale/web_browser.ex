@@ -159,10 +159,9 @@ defmodule PlugLocale.WebBrowser do
   @impl true
   def call(%Plug.Conn{} = conn, config) do
     locale = Map.get(conn.path_params, config.path_param_key)
+    sanitized_locale = sanitize_locale(config, locale)
 
-    locale = sanitize_locale(config, locale)
-
-    if locale do
+    if locale && sanitized_locale && locale == sanitized_locale do
       continue(conn, config, locale)
     else
       fallback(conn, config)
@@ -190,13 +189,8 @@ defmodule PlugLocale.WebBrowser do
 
   defp sanitize_locale(config, locale, opts \\ []) do
     default = Keyword.get(opts, :default, nil)
-
-    if locale do
-      locale = config.sanitize_locale.(locale)
-      if locale in config.locales, do: locale, else: default
-    else
-      default
-    end
+    locale = config.sanitize_locale.(locale)
+    if locale && locale in config.locales, do: locale, else: default
   end
 
   # support for Phoenix
