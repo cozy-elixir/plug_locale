@@ -1,7 +1,7 @@
 defmodule PlugLocale.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.2.0"
   @description "Plugs for putting locale into `assigns` storage."
   @source_url "https://github.com/cozy-elixir/plug_locale"
 
