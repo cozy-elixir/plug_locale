@@ -20,9 +20,9 @@ defmodule PlugLocale.Header do
           default_locale: "en",
           locales: ["en", "zh"]
 
-        plug :set_locale
+        plug :put_locale
 
-        def set_locale(conn, _opts) do
+        def put_locale(conn, _opts) do
           if locale = conn.assigns[:locale] do
             # integrate with gettext
             Gettext.put_locale(locale)
