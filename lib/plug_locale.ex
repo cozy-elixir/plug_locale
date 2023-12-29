@@ -51,7 +51,7 @@ defmodule PlugLocale do
 
     locale = sanitize_locale(config, locale, default: config.default_locale)
 
-    path = get_locale_path(conn, config, locale)
+    path = build_locale_path(conn, config, locale)
 
     conn
     |> redirect_to(path)
@@ -69,36 +69,86 @@ defmodule PlugLocale do
     end
   end
 
-  defp get_locale_path(
-         %Plug.Conn{private: %{plug_route: {matched_path, _}}} = conn,
+  # support for Phoenix
+  defp build_locale_path(
+         %Plug.Conn{private: %{phoenix_router: router}} = conn,
          config,
          locale
        ) do
-    matched_path_info = String.split(matched_path, "/", trim: true)
-    is_locale_path? = inspect(config.route_identifier) in matched_path_info
+    route_info = phoenix_route_info(router, conn)
+    convert_route_info_to_locale_path(route_info, conn, config, locale)
+  end
+
+  # support for Plug
+  defp build_locale_path(
+         %Plug.Conn{private: %{plug_route: {_route, _callback}}} = conn,
+         config,
+         locale
+       ) do
+    route_info = plug_route_info(conn)
+    convert_route_info_to_locale_path(route_info, conn, config, locale)
+  end
+
+  defp build_locale_path(%Plug.Conn{} = conn, _config, locale) do
+    build_path([locale | conn.path_info])
+  end
+
+  defp convert_route_info_to_locale_path(
+         %{
+           path_info: route_path_info,
+           path_params: route_path_params
+         },
+         conn,
+         config,
+         locale
+       ) do
+    is_locale_path? = inspect(config.route_identifier) in route_path_info
 
     if is_locale_path? do
-      path_params = conn.path_params |> Map.put(config.path_param_key, locale)
+      path_params = Map.put(route_path_params, config.path_param_key, locale)
 
       path_info =
         Enum.map(
-          matched_path_info,
+          route_path_info,
           fn
             ":" <> seg -> Map.fetch!(path_params, seg)
             seg -> seg
           end
         )
 
-      "/" <> Enum.join(path_info, "/")
+      build_path(path_info)
     else
-      path_info = [locale | conn.path_info]
-      "/" <> Enum.join(path_info, "/")
+      build_path([locale | conn.path_info])
     end
   end
 
-  defp get_locale_path(%Plug.Conn{} = conn, _config, locale) do
-    path_info = [locale | conn.path_info]
+  defp build_path(path_info) when is_list(path_info) do
     "/" <> Enum.join(path_info, "/")
+  end
+
+  # Phoenix provides `Phoenix.Router.router_info/4`, but I don't want this
+  # library to depend on Phoenix directly. So, I implement a simple version
+  # of it according to
+  # https://github.com/phoenixframework/phoenix/blob/a66e7c33019a3d564c4f7f2e48b77efb63c54ad7/lib/phoenix/router.ex#L1220
+  defp phoenix_route_info(router, conn) do
+    %{method: method, host: host, path_info: path_info} = conn
+
+    with {metadata, _prepare, _pipeline, {_plug, _opts}} <-
+           router.__match_route__(path_info, method, host) do
+      %{
+        path_info: String.split(metadata.route, "/", trim: true),
+        path_params: metadata.path_params
+      }
+    end
+  end
+
+  defp plug_route_info(conn) do
+    %{private: %{plug_route: {route, _callback}}} = conn
+
+    %{
+      path_info: String.split(route, "/", trim: true),
+      path_params: conn.path_params
+    }
   end
 
   def redirect_to(conn, path) do

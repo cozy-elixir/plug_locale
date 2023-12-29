@@ -120,4 +120,6 @@ defmodule PlugLocaleTest do
       assert conn.resp_body =~ "\"/zh-Hans/posts/7\""
     end
   end
+
+  # TODO: add tests for Phoenix router
 end
