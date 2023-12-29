@@ -50,7 +50,7 @@ defmodule PlugLocale.HeaderTest do
   test "request with unknown header" do
     conn =
       conn(:get, "/posts/7")
-      |> put_req_header("x-client-locale", "unknown")
+      |> put_req_header("x-client-locale", "unknown-locale")
 
     conn = DemoRouter.call(conn, @opts)
 
