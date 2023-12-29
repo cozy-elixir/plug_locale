@@ -1,6 +1,6 @@
-defmodule PlugLocale.AcceptLanguageTest do
+defmodule PlugLocale.WebBrowser.AcceptLanguageTest do
   use ExUnit.Case, async: true
-  alias PlugLocale.AcceptLanguage
+  alias PlugLocale.WebBrowser.AcceptLanguage
 
   describe "extract_locales/1" do
     test "works for normal languages" do

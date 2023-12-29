@@ -1,4 +1,4 @@
-defmodule PlugLocaleTest do
+defmodule PlugLocale.WebBrowserTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
@@ -7,7 +7,7 @@ defmodule PlugLocaleTest do
 
     plug :match
 
-    plug PlugLocale,
+    plug PlugLocale.WebBrowser,
       default_locale: "en",
       locales: ["en", "zh-Hans"]
 
