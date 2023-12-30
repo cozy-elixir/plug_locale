@@ -85,21 +85,23 @@ defmodule PlugLocale.WebBrowser do
   ## Options
 
     * `:default_locale` - the default locale.
-    * `:locales` - all the supported locales. Default to `[]`.
+    * `:locales` - all the supported locales.
+      Default to `[]`.
     * `:detect_locale_from` - specify *the sources* and *the order of sources*
       for detecting locale.
       Available sources are `:query`, `:cookie`, `:referrer`, `:accept_language`.
       Default to `[:cookie, :referrer, :accept_language]`.
     * `:cast_locale_by` - specify the function for casting extracted or
-      detected locales. Default to `nil`.
+      detected locales.
+      Default to `nil`.
     * `:route_identifier` - the part for identifying locale in route.
       Default to `:locale`.
     * `:assign_key` - the key for putting value into `assigns` storage.
-      Default to the value of `:route_identifier` option.
+      Default to `:locale`.
     * `:query_key` - the key for getting locale from querystring.
-      Default to the **stringified** value of `:route_identifier` option.
+      Default to `"locale"`.
     * `:cookie_key` - the key for getting locale from cookie.
-      Default to `"preferred_locale"`.
+      Default to `"locale"`.
 
   ### about `:cast_locale_by` option
 
@@ -463,7 +465,7 @@ defmodule PlugLocale.WebBrowser do
 
     if locale do
       casted_locale =
-        if is_function(config.cast_locale_by, 1),
+        if config.cast_locale_by,
           do: config.cast_locale_by.(locale),
           else: locale
 

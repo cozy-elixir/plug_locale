@@ -61,9 +61,11 @@ defmodule PlugLocale.Header do
   ## Options
 
     * `:default_locale` - the default locale.
-    * `:locales` - all the supported locales. Default to `[]`.
+    * `:locales` - all the supported locales.
+      Default to `[]`.
     * `:cast_locale_by` - specify the function for casting extracted or
-      detected locales. Default to `nil`.
+      detected locales.
+      Default to `nil`.
     * `:header_name` - the header for getting locale.
       Default to `"x-client-locale"`.
     * `:assign_key` - the key for putting value into `assigns` storage.
@@ -103,7 +105,7 @@ defmodule PlugLocale.Header do
       plug `#{inspect(__MODULE__)}`,
         default_locale: "en",
         locales: ["en", "zh"],
-        sanitize_locale_by: &DemoWeb.I18n.cast_locale/1,
+        cast_locale_by: &DemoWeb.I18n.cast_locale/1,
         # ...
 
   """
@@ -131,12 +133,12 @@ defmodule PlugLocale.Header do
     end
   end
 
-  defp cast_locale(config, locale, opts \\ []) do
+  defp cast_locale(config, locale, opts) do
     default = Keyword.get(opts, :default, nil)
 
     if locale do
       casted_locale =
-        if is_function(config.cast_locale_by, 1),
+        if config.cast_locale_by,
           do: config.cast_locale_by.(locale),
           else: locale
 

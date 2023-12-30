@@ -132,7 +132,7 @@ defmodule PlugLocale.WebBrowserTest do
     test "is redirected to a path detected from cookie" do
       conn =
         conn(:get, "/unknown-locale/posts/7")
-        |> put_resp_cookie("preferred_locale", "zh-Hans")
+        |> put_resp_cookie("locale", "zh-Hans")
         |> fetch_cookies()
 
       conn = DemoRouter.call(conn, @opts)

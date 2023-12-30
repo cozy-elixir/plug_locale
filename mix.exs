@@ -32,6 +32,7 @@ defmodule PlugLocale.MixProject do
   defp deps do
     [
       {:plug, "~> 1.14"},
+      {:nimble_options, "~> 1.0"},
       {:ex_check, "~> 0.15.0", only: [:dev], runtime: false},
       {:credo, ">= 0.0.0", only: [:dev], runtime: false},
       {:dialyxir, ">= 0.0.0", only: [:dev], runtime: false},
