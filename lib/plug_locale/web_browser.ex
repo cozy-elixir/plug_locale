@@ -199,9 +199,9 @@ defmodule PlugLocale.WebBrowser do
   @impl true
   def call(%Plug.Conn{} = conn, config) do
     locale = Map.get(conn.path_params, config.path_param_key)
-    sanitized_locale = sanitize_locale(config, locale)
+    casted_locale = cast_locale(config, locale)
 
-    if locale && sanitized_locale && locale == sanitized_locale do
+    if locale && casted_locale && locale == casted_locale do
       continue(conn, config, locale)
     else
       fallback(conn, config)
@@ -242,19 +242,13 @@ defmodule PlugLocale.WebBrowser do
           else: {:cont, nil}
       end)
 
-    locale = sanitize_locale(config, locale, default: config.default_locale)
+    locale = cast_locale(config, locale, default: config.default_locale)
 
     path = build_locale_path(conn, config, locale)
 
     conn
     |> redirect_to(path)
     |> halt()
-  end
-
-  defp sanitize_locale(config, locale, opts \\ []) do
-    default = Keyword.get(opts, :default, nil)
-    locale = config.sanitize_locale_by.(locale)
-    if locale && locale in config.locales, do: locale, else: default
   end
 
   # support for Phoenix
@@ -416,7 +410,7 @@ defmodule PlugLocale.WebBrowser do
         accept_language
         |> AcceptLanguage.extract_locales()
         |> Enum.find(nil, fn locale ->
-          sanitize_locale(config, locale)
+          cast_locale(config, locale)
         end)
 
       _ ->
@@ -426,5 +420,19 @@ defmodule PlugLocale.WebBrowser do
 
   defp detect_locale(source, _conn, _config) do
     raise RuntimeError, "unknown source for detecting locale - #{inspect(source)}"
+  end
+
+  defp cast_locale(config, locale, opts \\ []) do
+    default = Keyword.get(opts, :default, nil)
+
+    if locale do
+      casted_locale = config.sanitize_locale_by.(locale)
+
+      if casted_locale in config.locales,
+        do: casted_locale,
+        else: default
+    else
+      default
+    end
   end
 end
