@@ -11,7 +11,7 @@ defmodule PlugLocale.Browser.Config do
       default: []
     ],
     detect_locale_from: [
-      type: {:list, :atom},
+      type: {:list, {:in, [:query, :cookie, :referrer, :accept_language]}},
       default: [:cookie, :referrer, :accept_language]
     ],
     cast_locale_by: [
