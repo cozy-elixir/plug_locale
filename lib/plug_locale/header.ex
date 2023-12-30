@@ -62,8 +62,8 @@ defmodule PlugLocale.Header do
 
     * `:default_locale` - the default locale.
     * `:locales` - all the supported locales. Default to `[]`.
-    * `:sanitize_locale` - a function for sanitizing extracted or detected
-      locales. Default to `&PlugLocale.Sanitizer.sanitize/1` which does
+    * `:sanitize_locale_by` - specify the function for sanitizing extracted or
+      detected locales. Default to `&PlugLocale.Sanitizer.sanitize/1` which does
       nothing. See `PlugLocale.Sanitizer` for more details.
     * `:header_name` - the header for getting locale.
       Default to `"x-client-locale"`.
@@ -86,7 +86,7 @@ defmodule PlugLocale.Header do
 
     locale =
       if locale do
-        locale = config.sanitize_locale.(locale)
+        locale = config.sanitize_locale_by.(locale)
         if locale in config.locales, do: locale, else: config.default_locale
       else
         config.default_locale

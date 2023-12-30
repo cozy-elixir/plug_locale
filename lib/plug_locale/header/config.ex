@@ -4,7 +4,7 @@ defmodule PlugLocale.Header.Config do
   defstruct [
     :default_locale,
     :locales,
-    :sanitize_locale,
+    :sanitize_locale_by,
     :header_name,
     :assign_key
   ]
@@ -13,14 +13,14 @@ defmodule PlugLocale.Header.Config do
   def new!(opts) when is_list(opts) do
     default_locale = Keyword.get(opts, :default_locale)
     locales = Keyword.get(opts, :locales, [])
-    sanitize_locale = Keyword.get(opts, :sanitize_locale, &PlugLocale.Sanitizer.sanitize/1)
+    sanitize_locale_by = Keyword.get(opts, :sanitize_locale_by, &PlugLocale.Sanitizer.sanitize/1)
     header_name = Keyword.get(opts, :header_name, "x-client-locale")
     assign_key = Keyword.get(opts, :assign_key, :locale)
 
     [
       default_locale: default_locale,
       locales: locales,
-      sanitize_locale: sanitize_locale,
+      sanitize_locale_by: sanitize_locale_by,
       header_name: header_name,
       assign_key: assign_key
     ]
@@ -43,14 +43,14 @@ defmodule PlugLocale.Header.Config do
   defp as_map!(opts) do
     default_locale = Keyword.fetch!(opts, :default_locale)
     locales = Keyword.fetch!(opts, :locales)
-    sanitize_locale = Keyword.fetch!(opts, :sanitize_locale)
+    sanitize_locale_by = Keyword.fetch!(opts, :sanitize_locale_by)
     header_name = Keyword.fetch!(opts, :header_name)
     assign_key = Keyword.fetch!(opts, :assign_key)
 
     %{
       default_locale: default_locale,
       locales: Enum.uniq([default_locale | locales]),
-      sanitize_locale: sanitize_locale,
+      sanitize_locale_by: sanitize_locale_by,
       header_name: header_name,
       assign_key: assign_key
     }

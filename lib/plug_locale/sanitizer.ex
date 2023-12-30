@@ -27,20 +27,20 @@ defmodule PlugLocale.Sanitizer do
         end
       end
 
-  Then, use above implementation in plugs by using `:sanitize_locale` option:
+  Then, use above implementation in plugs by using `:sanitize_locale_by` option:
 
       # use it for PlugLocale.WebBrowser
       plug PlugLocale.WebBrowser,
         default_locale: "en",
         locales: ["en", "zh"],
-        sanitize_locale: &DemoWeb.LocaleSanitizer.sanitize/1,
+        sanitize_locale_by: &DemoWeb.LocaleSanitizer.sanitize/1,
         # ...
 
       # use it for PlugLocale.Header
       plug PlugLocale.Header,
         default_locale: "en",
         locales: ["en", "zh"],
-        sanitize_locale: &DemoWeb.LocaleSanitizer.sanitize/1,
+        sanitize_locale_by: &DemoWeb.LocaleSanitizer.sanitize/1,
         # ...
 
   """

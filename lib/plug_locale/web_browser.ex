@@ -90,8 +90,8 @@ defmodule PlugLocale.WebBrowser do
       for detecting locale. 
       Available sources are `:query`, `:cookie`, `:referrer`, `:accept_language`.
       Default to `[:query, :cookie, :referrer, :accept_language]`.
-    * `:sanitize_locale` - a function for sanitizing extracted or detected
-      locales. Default to `&PlugLocale.Sanitizer.sanitize/1` which does
+    * `:sanitize_locale_by` - specify the function for sanitizing extracted or
+      detected locales. Default to `&PlugLocale.Sanitizer.sanitize/1` which does
       nothing. See `PlugLocale.Sanitizer` for more details.
     * `:route_identifier` - the part for identifying locale in route.
       Default to `:locale`.
@@ -253,7 +253,7 @@ defmodule PlugLocale.WebBrowser do
 
   defp sanitize_locale(config, locale, opts \\ []) do
     default = Keyword.get(opts, :default, nil)
-    locale = config.sanitize_locale.(locale)
+    locale = config.sanitize_locale_by.(locale)
     if locale && locale in config.locales, do: locale, else: default
   end
 
