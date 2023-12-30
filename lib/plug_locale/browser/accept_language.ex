@@ -1,4 +1,4 @@
-defmodule PlugLocale.WebBrowser.AcceptLanguage do
+defmodule PlugLocale.Browser.AcceptLanguage do
   @moduledoc false
 
   def extract_locales(line) do

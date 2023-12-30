@@ -6,6 +6,7 @@ Breaking changes:
 
 - rename `:sanitize_locale_by` option `:cast_locale_by`
 - rename `PlugLocale.WebBrowser.build_localized_path` to `PlugLocale.WebBrowser.build_locale_path`
+- rename `PlugLocale.WebBrowser` to `PlugLocale.Browser`
 
 New Features:
 

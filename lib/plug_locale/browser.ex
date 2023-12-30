@@ -1,4 +1,4 @@
-defmodule PlugLocale.WebBrowser do
+defmodule PlugLocale.Browser do
   @moduledoc """
   Puts locale into `assigns` storage for Web browser environment.
 
@@ -28,10 +28,10 @@ defmodule PlugLocale.WebBrowser do
   is useless. All you need is to construct a plug pipeline through
   `Plug.Builder`. For example:
 
-      defmodule DemoWeb.PlugWebBrowserLocalization do
+      defmodule DemoWeb.PlugBrowserLocalization do
         use Plug.Builder
       
-        plug PlugLocale.WebBrowser,
+        plug PlugLocale.Browser,
           default_locale: "en",
           locales: ["en", "zh"],
           route_identifier: :locale,
@@ -60,7 +60,7 @@ defmodule PlugLocale.WebBrowser do
 
           # ...
 
-          plug DemoWeb.PlugWebBrowserLocalization
+          plug DemoWeb.PlugBrowserLocalization
 
           # ...
         end
@@ -156,7 +156,7 @@ defmodule PlugLocale.WebBrowser do
   <ul>
     <li>
       <a
-        href={PlugLocale.WebBrowser.build_locale_path(@conn, "en")}
+        href={PlugLocale.Browser.build_locale_path(@conn, "en")}
         aria-label="switch to locale - en"
       >
         English
@@ -164,7 +164,7 @@ defmodule PlugLocale.WebBrowser do
     </li>
     <li>
       <a
-        href={PlugLocale.WebBrowser.build_locale_path(@conn, "zh")}
+        href={PlugLocale.Browser.build_locale_path(@conn, "zh")}
         aria-label="switch to locale - zh"
       >
         中文

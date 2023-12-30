@@ -1,4 +1,4 @@
-defmodule PlugLocale.WebBrowserTest do
+defmodule PlugLocale.BrowserTest do
   use ExUnit.Case, async: true
   use Plug.Test
   import ExUnit.CaptureLog
@@ -11,7 +11,7 @@ defmodule PlugLocale.WebBrowserTest do
     plug Plug.Parsers,
       parsers: [:urlencoded]
 
-    plug PlugLocale.WebBrowser,
+    plug PlugLocale.Browser,
       default_locale: "en",
       locales: ["en", "zh-Hans"],
       detect_locale_from: [:query, :cookie, :referrer, :accept_language]
@@ -39,7 +39,7 @@ defmodule PlugLocale.WebBrowserTest do
 
     plug :match
 
-    plug PlugLocale.WebBrowser,
+    plug PlugLocale.Browser,
       default_locale: "en",
       locales: ["en", "zh-Hans"],
       detect_locale_from: [:query, :cookie, :referrer, :accept_language]
@@ -67,7 +67,7 @@ defmodule PlugLocale.WebBrowserTest do
 
     plug :match
 
-    plug PlugLocale.WebBrowser,
+    plug PlugLocale.Browser,
       default_locale: "en",
       locales: ["en", "zh-Hans"],
       detect_locale_from: [:query, :cookie, :referrer, :accept_language]
@@ -78,7 +78,7 @@ defmodule PlugLocale.WebBrowserTest do
 
     def put_cookie(conn, _opts) do
       if locale = conn.assigns[:locale] do
-        PlugLocale.WebBrowser.put_locale_resp_cookie(conn, locale, max_age: 3600)
+        PlugLocale.Browser.put_locale_resp_cookie(conn, locale, max_age: 3600)
       else
         conn
       end
@@ -227,7 +227,7 @@ defmodule PlugLocale.WebBrowserTest do
   test "build_locale_path/2" do
     conn = conn(:get, "/en/posts/7")
     conn = DemoRouter.call(conn, @opts)
-    assert "/zh-Hans/posts/7" == PlugLocale.WebBrowser.build_locale_path(conn, "zh-Hans")
+    assert "/zh-Hans/posts/7" == PlugLocale.Browser.build_locale_path(conn, "zh-Hans")
   end
 
   test "put_locale_resp_cookie/2" do

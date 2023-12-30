@@ -1,4 +1,4 @@
-defmodule PlugLocale.WebBrowser.Config do
+defmodule PlugLocale.Browser.Config do
   @moduledoc false
 
   @opts_schema [

@@ -25,7 +25,7 @@ Different from [`set_locale`](https://hex.pm/packages/set_locale), [`ex_cldr_plu
 - only does one simple thing - setting a locale-related assign (by default, it is `conn.assigns.locale`).
 - does not make any assumptions about the localization strategy, so it is not tightly bound to packages like [`gettext`](https://hex.pm/packages/gettext) or [`ex_cldr`](https://hex.pm/packages/ex_cldr).
 
-Check out `PlugLocale.WebBrowser`, `PlugLocale.Header` in [documentation](https://hexdocs.pm/plug_locale) for more details.
+Check out `PlugLocale.Browser`, `PlugLocale.Header` in [documentation](https://hexdocs.pm/plug_locale) for more details.
 
 ## Thanks
 
