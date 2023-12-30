@@ -93,7 +93,9 @@ defmodule PlugLocale.WebBrowser do
       Default to `:locale`.
     * `:assign_key` - the key for putting value into `assigns` storage.
       Default to the value of `:route_identifier` option.
-    * `:cookie_key` - the key for reading locale from cookie.
+    * `:query_key` - the key for getting locale from querystring.
+      Default to the **stringified** value of `:route_identifier` option.
+    * `:cookie_key` - the key for getting locale from cookie.
       Default to `"preferred_locale"`.
 
   ## Helper functions
@@ -228,9 +230,10 @@ defmodule PlugLocale.WebBrowser do
 
   defp fallback(conn, config) do
     locale =
-      get_locale(:cookie, conn, config) ||
+      get_locale(:query, conn, config) ||
+        get_locale(:cookie, conn, config) ||
         get_locale(:referrer, conn, config) ||
-        get_locale(:header, conn, config)
+        get_locale(:accept_language, conn, config)
 
     locale = sanitize_locale(config, locale, default: config.default_locale)
 
@@ -358,23 +361,29 @@ defmodule PlugLocale.WebBrowser do
     end
   end
 
-  defp get_locale(
-         :cookie,
-         %Plug.Conn{
-           cookies: %Plug.Conn.Unfetched{}
-         } = _conn,
-         _config
-       ) do
-    # credo:disable-for-next-line 
-    # TODO: add warning for unfetched cookies
+  defp get_locale(:query, %Plug.Conn{query_params: %Plug.Conn.Unfetched{}}, _config) do
+    Logger.warning(
+      ":query_params of conn is still unfetched when calling #{inspect(__MODULE__)}, " <>
+        "skip getting locale from it"
+    )
+
     nil
   end
 
-  defp get_locale(
-         :cookie,
-         %Plug.Conn{} = conn,
-         config
-       ) do
+  defp get_locale(:query, conn, config) do
+    conn.query_params[config.query_key]
+  end
+
+  defp get_locale(:cookie, %Plug.Conn{cookies: %Plug.Conn.Unfetched{}}, _config) do
+    Logger.warning(
+      ":cookies of conn is still unfetched when calling #{inspect(__MODULE__)}, " <>
+        "skip getting locale from it"
+    )
+
+    nil
+  end
+
+  defp get_locale(:cookie, conn, config) do
     conn.cookies[config.cookie_key]
   end
 
@@ -394,7 +403,7 @@ defmodule PlugLocale.WebBrowser do
     end
   end
 
-  defp get_locale(:header, conn, config) do
+  defp get_locale(:accept_language, conn, config) do
     case get_req_header(conn, "accept-language") do
       [accept_language | _] ->
         accept_language

@@ -1,8 +1,39 @@
 defmodule PlugLocale.WebBrowserTest do
   use ExUnit.Case, async: true
   use Plug.Test
+  import ExUnit.CaptureLog
 
   defmodule DemoRouter do
+    use Plug.Router
+
+    plug :match
+
+    plug Plug.Parsers,
+      parsers: [:urlencoded]
+
+    plug PlugLocale.WebBrowser,
+      default_locale: "en",
+      locales: ["en", "zh-Hans"]
+
+    plug :dispatch
+
+    get "/posts/:id" do
+      %{"id" => id} = conn.params
+      send_resp(conn, 200, "post: #{id}")
+    end
+
+    get "/:locale/posts/:id" do
+      %{"id" => id} = conn.params
+      %{locale: locale} = conn.assigns
+      send_resp(conn, 200, "post: #{locale} - #{id}")
+    end
+
+    match _ do
+      send_resp(conn, 404, "oops")
+    end
+  end
+
+  defmodule DemoRouterWithoutParsers do
     use Plug.Router
 
     plug :match
@@ -87,16 +118,29 @@ defmodule PlugLocale.WebBrowserTest do
   end
 
   describe "path with unknown locale" do
-    test "is redirected to a detected path - default locale" do
-      conn = conn(:get, "/unknown-locale/posts/7")
+    test "is redirected to a path detected from query" do
+      conn = conn(:get, "/unknown-locale/posts/7?locale=zh-Hans")
       conn = DemoRouter.call(conn, @opts)
 
       assert conn.status == 302
       assert conn.assigns[:locale] == nil
-      assert conn.resp_body =~ "\"/en/posts/7\""
+      assert conn.resp_body =~ "\"/zh-Hans/posts/7\""
     end
 
-    test "is redirected to a detected path from referrer header" do
+    test "is redirected to a path detected from cookie" do
+      conn =
+        conn(:get, "/unknown-locale/posts/7")
+        |> put_resp_cookie("preferred_locale", "zh-Hans")
+        |> fetch_cookies()
+
+      conn = DemoRouter.call(conn, @opts)
+
+      assert conn.status == 302
+      assert conn.assigns[:locale] == nil
+      assert conn.resp_body =~ "\"/zh-Hans/posts/7\""
+    end
+
+    test "is redirected to a path detected from referrer header" do
       conn =
         conn(:get, "/unknown-locale/posts/7")
         |> put_req_header("referer", "/zh-Hans/origin")
@@ -108,7 +152,7 @@ defmodule PlugLocale.WebBrowserTest do
       assert conn.resp_body =~ "\"/zh-Hans/posts/7\""
     end
 
-    test "is redirected to a detected path from accept-language header" do
+    test "is redirected to a path detected from accept-language header" do
       conn =
         conn(:get, "/unknown-locale/posts/7")
         |> put_req_header("accept-language", "de, en-gb;q=0.8, zh-Hans;q=0.9, en;q=0.7")
@@ -119,6 +163,25 @@ defmodule PlugLocale.WebBrowserTest do
       assert conn.assigns[:locale] == nil
       assert conn.resp_body =~ "\"/zh-Hans/posts/7\""
     end
+
+    test "is redirected to a detected path - default locale" do
+      conn = conn(:get, "/unknown-locale/posts/7")
+      conn = DemoRouter.call(conn, @opts)
+
+      assert conn.status == 302
+      assert conn.assigns[:locale] == nil
+      assert conn.resp_body =~ "\"/en/posts/7\""
+    end
+  end
+
+  test "show a warning when the required data is unfetched" do
+    conn = conn(:get, "/unknown-locale/posts/7")
+
+    opts = DemoRouterWithoutParsers.init([])
+    log = capture_log(fn -> DemoRouterWithoutParsers.call(conn, opts) end)
+
+    assert log =~ ":query_params of conn is still unfetched"
+    assert log =~ ":cookies of conn is still unfetched"
   end
 
   # credo:disable-for-next-line

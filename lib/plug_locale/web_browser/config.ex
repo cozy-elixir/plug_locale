@@ -8,6 +8,7 @@ defmodule PlugLocale.WebBrowser.Config do
     :route_identifier,
     :path_param_key,
     :assign_key,
+    :query_key,
     :cookie_key
   ]
 
@@ -18,6 +19,7 @@ defmodule PlugLocale.WebBrowser.Config do
     sanitize_locale = Keyword.get(opts, :sanitize_locale, &PlugLocale.Sanitizer.sanitize/1)
     route_identifier = Keyword.get(opts, :route_identifier, :locale)
     assign_key = Keyword.get(opts, :assign_key, route_identifier)
+    query_key = Keyword.get(opts, :query_key, to_string(route_identifier))
     cookie_key = Keyword.get(opts, :cookie_key, "preferred_locale")
 
     [
@@ -26,6 +28,7 @@ defmodule PlugLocale.WebBrowser.Config do
       sanitize_locale: sanitize_locale,
       route_identifier: route_identifier,
       assign_key: assign_key,
+      query_key: query_key,
       cookie_key: cookie_key
     ]
     |> validate!()
@@ -50,6 +53,7 @@ defmodule PlugLocale.WebBrowser.Config do
     sanitize_locale = Keyword.fetch!(opts, :sanitize_locale)
     route_identifier = Keyword.fetch!(opts, :route_identifier)
     assign_key = Keyword.fetch!(opts, :assign_key)
+    query_key = Keyword.fetch!(opts, :query_key)
     cookie_key = Keyword.fetch!(opts, :cookie_key)
 
     %{
@@ -57,8 +61,9 @@ defmodule PlugLocale.WebBrowser.Config do
       locales: Enum.uniq([default_locale | locales]),
       sanitize_locale: sanitize_locale,
       route_identifier: route_identifier,
-      path_param_key: Atom.to_string(route_identifier),
+      path_param_key: to_string(route_identifier),
       assign_key: assign_key,
+      query_key: query_key,
       cookie_key: cookie_key
     }
   end
