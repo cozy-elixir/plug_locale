@@ -4,6 +4,7 @@ defmodule PlugLocale.WebBrowser.Config do
   defstruct [
     :default_locale,
     :locales,
+    :detect_locale_from,
     :sanitize_locale,
     :route_identifier,
     :path_param_key,
@@ -16,6 +17,10 @@ defmodule PlugLocale.WebBrowser.Config do
   def new!(opts) when is_list(opts) do
     default_locale = Keyword.get(opts, :default_locale)
     locales = Keyword.get(opts, :locales, [])
+
+    detect_locale_from =
+      Keyword.get(opts, :detect_locale_from, [:query, :cookie, :referrer, :accept_language])
+
     sanitize_locale = Keyword.get(opts, :sanitize_locale, &PlugLocale.Sanitizer.sanitize/1)
     route_identifier = Keyword.get(opts, :route_identifier, :locale)
     assign_key = Keyword.get(opts, :assign_key, route_identifier)
@@ -25,6 +30,7 @@ defmodule PlugLocale.WebBrowser.Config do
     [
       default_locale: default_locale,
       locales: locales,
+      detect_locale_from: detect_locale_from,
       sanitize_locale: sanitize_locale,
       route_identifier: route_identifier,
       assign_key: assign_key,
@@ -50,6 +56,7 @@ defmodule PlugLocale.WebBrowser.Config do
   defp as_map!(opts) do
     default_locale = Keyword.fetch!(opts, :default_locale)
     locales = Keyword.fetch!(opts, :locales)
+    detect_locale_from = Keyword.fetch!(opts, :detect_locale_from)
     sanitize_locale = Keyword.fetch!(opts, :sanitize_locale)
     route_identifier = Keyword.fetch!(opts, :route_identifier)
     assign_key = Keyword.fetch!(opts, :assign_key)
@@ -59,6 +66,7 @@ defmodule PlugLocale.WebBrowser.Config do
     %{
       default_locale: default_locale,
       locales: Enum.uniq([default_locale | locales]),
+      detect_locale_from: detect_locale_from,
       sanitize_locale: sanitize_locale,
       route_identifier: route_identifier,
       path_param_key: to_string(route_identifier),

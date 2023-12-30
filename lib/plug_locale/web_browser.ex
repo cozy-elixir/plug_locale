@@ -86,6 +86,10 @@ defmodule PlugLocale.WebBrowser do
 
     * `:default_locale` - the default locale.
     * `:locales` - all the supported locales. Default to `[]`.
+    * `:detect_locale_from` - specify *the sources* and *the order of sources*
+      for detecting locale. 
+      Available sources are `:query`, `:cookie`, `:referrer`, `:accept_language`.
+      Default to `[:query, :cookie, :referrer, :accept_language]`.
     * `:sanitize_locale` - a function for sanitizing extracted or detected
       locales. Default to `&PlugLocale.Sanitizer.sanitize/1` which does
       nothing. See `PlugLocale.Sanitizer` for more details.
@@ -133,7 +137,7 @@ defmodule PlugLocale.WebBrowser do
   This plug will try to:
 
     1. extract locale from URL, and check if the locale is supported:
-       - If it succeeds, put locale into `assigns` storage。
+       - If it succeeds, put locale into `assigns` storage.
        - If it fails, jump to step 2.
     2. detect locale from Web browser environment, then redirect to
        the path corresponding to detected locale.
@@ -145,12 +149,14 @@ defmodule PlugLocale.WebBrowser do
 
   ### Detect locale from Web browser environment
 
-  Local is detected from multiple places:
+  By default, local is detected from multiple sources:
 
+    * query (whose key is specified by `:query_key` option)
     * cookie (whose key is specified by `:cookie_key` option)
     * HTTP request header - `referer`
     * HTTP request header - `accept-language`
-    * default locale (which is specified by `:default_locale` option)
+
+  If all detections fail, fallback to default locale.
 
   ## Examples
 
@@ -230,10 +236,11 @@ defmodule PlugLocale.WebBrowser do
 
   defp fallback(conn, config) do
     locale =
-      get_locale(:query, conn, config) ||
-        get_locale(:cookie, conn, config) ||
-        get_locale(:referrer, conn, config) ||
-        get_locale(:accept_language, conn, config)
+      Enum.reduce_while(config.detect_locale_from, nil, fn source, _acc ->
+        if locale = detect_locale(source, conn, config),
+          do: {:halt, locale},
+          else: {:cont, nil}
+      end)
 
     locale = sanitize_locale(config, locale, default: config.default_locale)
 
@@ -361,7 +368,7 @@ defmodule PlugLocale.WebBrowser do
     end
   end
 
-  defp get_locale(:query, %Plug.Conn{query_params: %Plug.Conn.Unfetched{}}, _config) do
+  defp detect_locale(:query, %Plug.Conn{query_params: %Plug.Conn.Unfetched{}}, _config) do
     Logger.warning(
       ":query_params of conn is still unfetched when calling #{inspect(__MODULE__)}, " <>
         "skip getting locale from it"
@@ -370,11 +377,11 @@ defmodule PlugLocale.WebBrowser do
     nil
   end
 
-  defp get_locale(:query, conn, config) do
+  defp detect_locale(:query, conn, config) do
     conn.query_params[config.query_key]
   end
 
-  defp get_locale(:cookie, %Plug.Conn{cookies: %Plug.Conn.Unfetched{}}, _config) do
+  defp detect_locale(:cookie, %Plug.Conn{cookies: %Plug.Conn.Unfetched{}}, _config) do
     Logger.warning(
       ":cookies of conn is still unfetched when calling #{inspect(__MODULE__)}, " <>
         "skip getting locale from it"
@@ -383,11 +390,11 @@ defmodule PlugLocale.WebBrowser do
     nil
   end
 
-  defp get_locale(:cookie, conn, config) do
+  defp detect_locale(:cookie, conn, config) do
     conn.cookies[config.cookie_key]
   end
 
-  defp get_locale(:referrer, conn, _config) do
+  defp detect_locale(:referrer, conn, _config) do
     case get_req_header(conn, "referer") do
       [referrer | _] ->
         uri = URI.parse(referrer)
@@ -403,7 +410,7 @@ defmodule PlugLocale.WebBrowser do
     end
   end
 
-  defp get_locale(:accept_language, conn, config) do
+  defp detect_locale(:accept_language, conn, config) do
     case get_req_header(conn, "accept-language") do
       [accept_language | _] ->
         accept_language
@@ -415,5 +422,9 @@ defmodule PlugLocale.WebBrowser do
       _ ->
         nil
     end
+  end
+
+  defp detect_locale(source, _conn, _config) do
+    raise RuntimeError, "unknown source for detecting locale - #{inspect(source)}"
   end
 end
