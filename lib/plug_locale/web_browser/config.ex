@@ -19,7 +19,7 @@ defmodule PlugLocale.WebBrowser.Config do
     locales = Keyword.get(opts, :locales, [])
 
     detect_locale_from =
-      Keyword.get(opts, :detect_locale_from, [:query, :cookie, :referrer, :accept_language])
+      Keyword.get(opts, :detect_locale_from, [:cookie, :referrer, :accept_language])
 
     sanitize_locale_by = Keyword.get(opts, :sanitize_locale_by, &PlugLocale.Sanitizer.sanitize/1)
     route_identifier = Keyword.get(opts, :route_identifier, :locale)

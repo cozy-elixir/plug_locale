@@ -89,7 +89,7 @@ defmodule PlugLocale.WebBrowser do
     * `:detect_locale_from` - specify *the sources* and *the order of sources*
       for detecting locale. 
       Available sources are `:query`, `:cookie`, `:referrer`, `:accept_language`.
-      Default to `[:query, :cookie, :referrer, :accept_language]`.
+      Default to `[:cookie, :referrer, :accept_language]`.
     * `:sanitize_locale_by` - specify the function for sanitizing extracted or
       detected locales. Default to `&PlugLocale.Sanitizer.sanitize/1` which does
       nothing. See `PlugLocale.Sanitizer` for more details.

@@ -13,7 +13,8 @@ defmodule PlugLocale.WebBrowserTest do
 
     plug PlugLocale.WebBrowser,
       default_locale: "en",
-      locales: ["en", "zh-Hans"]
+      locales: ["en", "zh-Hans"],
+      detect_locale_from: [:query, :cookie, :referrer, :accept_language]
 
     plug :dispatch
 
@@ -40,7 +41,8 @@ defmodule PlugLocale.WebBrowserTest do
 
     plug PlugLocale.WebBrowser,
       default_locale: "en",
-      locales: ["en", "zh-Hans"]
+      locales: ["en", "zh-Hans"],
+      detect_locale_from: [:query, :cookie, :referrer, :accept_language]
 
     plug :dispatch
 
