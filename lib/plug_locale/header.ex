@@ -62,13 +62,49 @@ defmodule PlugLocale.Header do
 
     * `:default_locale` - the default locale.
     * `:locales` - all the supported locales. Default to `[]`.
-    * `:sanitize_locale_by` - specify the function for sanitizing extracted or
-      detected locales. Default to `&PlugLocale.Sanitizer.sanitize/1` which does
-      nothing. See `PlugLocale.Sanitizer` for more details.
+    * `:cast_locale_by` - specify the function for casting extracted or
+      detected locales. Default to `nil`.
     * `:header_name` - the header for getting locale.
       Default to `"x-client-locale"`.
     * `:assign_key` - the key for putting value into `assigns` storage.
       Default to `:locale`.
+
+  ### about `:cast_locale_by` option
+
+  By default, the value is `nil`, which means doing nothing. But, in practice,
+  you will need to use something meaningful.
+
+  A possible implementation:
+
+      defmodule DemoWeb.I18n do
+        def cast_locale(locale) do
+          case locale do
+            # explicit matching on supported locales
+            locale when locale in ["en", "zh"] ->
+              locale
+
+            # fuzzy matching on en locale
+            "en-" <> _ ->
+              "en"
+
+            # fuzzy matching on zh locale
+            "zh-" <> _ ->
+              "zh"
+
+            # fallback for unsupported locales
+            _ ->
+              "en"
+          end
+        end
+      end
+
+  Then, use above implementation for plug:
+
+      plug `#{inspect(__MODULE__)}`,
+        default_locale: "en",
+        locales: ["en", "zh"],
+        sanitize_locale_by: &DemoWeb.I18n.cast_locale/1,
+        # ...
 
   """
 
@@ -83,22 +119,32 @@ defmodule PlugLocale.Header do
   @impl true
   def call(conn, config) do
     locale = get_locale_from_header(conn, config)
+    casted_locale = cast_locale(config, locale, default: config.default_locale)
 
-    locale =
-      if locale do
-        locale = config.sanitize_locale_by.(locale)
-        if locale in config.locales, do: locale, else: config.default_locale
-      else
-        config.default_locale
-      end
-
-    assign(conn, config.assign_key, locale)
+    assign(conn, config.assign_key, casted_locale)
   end
 
   defp get_locale_from_header(conn, config) do
     case get_req_header(conn, config.header_name) do
       [locale | _] -> locale
       _ -> nil
+    end
+  end
+
+  defp cast_locale(config, locale, opts \\ []) do
+    default = Keyword.get(opts, :default, nil)
+
+    if locale do
+      casted_locale =
+        if is_function(config.cast_locale_by, 1),
+          do: config.cast_locale_by.(locale),
+          else: locale
+
+      if casted_locale in config.locales,
+        do: casted_locale,
+        else: default
+    else
+      default
     end
   end
 end

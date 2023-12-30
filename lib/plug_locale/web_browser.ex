@@ -87,12 +87,11 @@ defmodule PlugLocale.WebBrowser do
     * `:default_locale` - the default locale.
     * `:locales` - all the supported locales. Default to `[]`.
     * `:detect_locale_from` - specify *the sources* and *the order of sources*
-      for detecting locale. 
+      for detecting locale.
       Available sources are `:query`, `:cookie`, `:referrer`, `:accept_language`.
       Default to `[:cookie, :referrer, :accept_language]`.
-    * `:sanitize_locale_by` - specify the function for sanitizing extracted or
-      detected locales. Default to `&PlugLocale.Sanitizer.sanitize/1` which does
-      nothing. See `PlugLocale.Sanitizer` for more details.
+    * `:cast_locale_by` - specify the function for casting extracted or
+      detected locales. Default to `nil`.
     * `:route_identifier` - the part for identifying locale in route.
       Default to `:locale`.
     * `:assign_key` - the key for putting value into `assigns` storage.
@@ -101,6 +100,43 @@ defmodule PlugLocale.WebBrowser do
       Default to the **stringified** value of `:route_identifier` option.
     * `:cookie_key` - the key for getting locale from cookie.
       Default to `"preferred_locale"`.
+
+  ### about `:cast_locale_by` option
+
+  By default, the value is `nil`, which means doing nothing. But, in practice,
+  you will need to use something meaningful.
+
+  A possible implementation:
+
+      defmodule DemoWeb.I18n do
+        def cast_locale(locale) do
+          case locale do
+            # explicit matching on supported locales
+            locale when locale in ["en", "zh"] ->
+              locale
+
+            # fuzzy matching on en locale
+            "en-" <> _ ->
+              "en"
+
+            # fuzzy matching on zh locale
+            "zh-" <> _ ->
+              "zh"
+
+            # fallback for unsupported locales
+            _ ->
+              "en"
+          end
+        end
+      end
+
+  Then, use above implementation for plug:
+
+      plug `#{inspect(__MODULE__)}`,
+        default_locale: "en",
+        locales: ["en", "zh"],
+        cast_locale_by: &DemoWeb.I18n.cast_locale/1,
+        # ...
 
   ## Helper functions
 
@@ -426,7 +462,10 @@ defmodule PlugLocale.WebBrowser do
     default = Keyword.get(opts, :default, nil)
 
     if locale do
-      casted_locale = config.sanitize_locale_by.(locale)
+      casted_locale =
+        if is_function(config.cast_locale_by, 1),
+          do: config.cast_locale_by.(locale),
+          else: locale
 
       if casted_locale in config.locales,
         do: casted_locale,
