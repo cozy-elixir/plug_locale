@@ -145,7 +145,10 @@ defmodule PlugLocale.WebBrowser do
   `#{inspect(__MODULE__)}` also provides some helper functions, which will be useful
   when implementing UI components:
 
-    * `build_localized_path/2`
+    * `build_locale_path/2`
+    * `put_locale_resp_cookie/2` / `put_locale_resp_cookie/3`
+
+  Check out their docs for more details.
 
   ### an example UI component - simple locale switcher
 
@@ -153,7 +156,7 @@ defmodule PlugLocale.WebBrowser do
   <ul>
     <li>
       <a
-        href={PlugLocale.WebBrowser.build_localized_path(@conn, "en")}
+        href={PlugLocale.WebBrowser.build_locale_path(@conn, "en")}
         aria-label="switch to locale - en"
       >
         English
@@ -161,7 +164,7 @@ defmodule PlugLocale.WebBrowser do
     </li>
     <li>
       <a
-        href={PlugLocale.WebBrowser.build_localized_path(@conn, "zh")}
+        href={PlugLocale.WebBrowser.build_locale_path(@conn, "zh")}
         aria-label="switch to locale - zh"
       >
         中文
@@ -249,21 +252,41 @@ defmodule PlugLocale.WebBrowser do
   @doc """
   Builds a localized path for current path.
 
+  > Note: the locale passed to this function won't be casted by the function
+  > which is specified by `:cast_locale_by` option.
+
   ## Examples
 
       # the request path of conn is /posts/7
-      iex> build_localized_path(conn, "en")
+      iex> build_locale_path(conn, "en")
       "/en/posts/7"
 
       # the request path of conn is /en/posts/7
-      iex> build_localized_path(conn, "zh")
+      iex> build_locale_path(conn, "zh")
       "/zh/posts/7"
 
   """
-  @spec build_localized_path(Plug.Conn.t(), String.t()) :: String.t()
-  def build_localized_path(conn, locale) do
+  @spec build_locale_path(Plug.Conn.t(), String.t()) :: String.t()
+  def build_locale_path(%Plug.Conn{} = conn, locale) do
     %{config: config} = Map.fetch!(conn.private, @private_key)
-    build_locale_path(conn, config, locale)
+    __build_locale_path__(conn, config, locale)
+  end
+
+  @doc """
+  Puts a response cookie for locale in the connection.
+
+  See `Plug.Conn.put_resp_cookie/4` for more details.
+
+  ## Examples
+
+      iex> put_locale_resp_cookie(conn, "en")
+      iex> put_locale_resp_cookie(conn, "zh", max_age: 365 * 24 * 60 * 60)
+
+  """
+  @spec put_locale_resp_cookie(Plug.Conn.t(), String.t()) :: Plug.Conn.t()
+  def put_locale_resp_cookie(%Plug.Conn{} = conn, locale, opts \\ []) do
+    %{config: %{cookie_key: key}} = Map.fetch!(conn.private, @private_key)
+    put_resp_cookie(conn, key, locale, opts)
   end
 
   defp continue(conn, config, locale) do
@@ -282,7 +305,7 @@ defmodule PlugLocale.WebBrowser do
 
     locale = cast_locale(config, locale, default: config.default_locale)
 
-    path = build_locale_path(conn, config, locale)
+    path = __build_locale_path__(conn, config, locale)
 
     conn
     |> redirect_to(path)
@@ -290,7 +313,7 @@ defmodule PlugLocale.WebBrowser do
   end
 
   # support for Phoenix
-  defp build_locale_path(
+  defp __build_locale_path__(
          %Plug.Conn{private: %{phoenix_router: router}} = conn,
          config,
          locale
@@ -300,7 +323,7 @@ defmodule PlugLocale.WebBrowser do
   end
 
   # support for Plug
-  defp build_locale_path(
+  defp __build_locale_path__(
          %Plug.Conn{private: %{plug_route: {_route, _callback}}} = conn,
          config,
          locale
@@ -309,7 +332,7 @@ defmodule PlugLocale.WebBrowser do
     convert_route_info_to_locale_path(route_info, conn, config, locale)
   end
 
-  defp build_locale_path(%Plug.Conn{} = conn, _config, locale) do
+  defp __build_locale_path__(%Plug.Conn{} = conn, _config, locale) do
     build_path([locale | conn.path_info])
   end
 

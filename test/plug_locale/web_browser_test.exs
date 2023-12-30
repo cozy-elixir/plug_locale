@@ -62,7 +62,45 @@ defmodule PlugLocale.WebBrowserTest do
     end
   end
 
-  @opts DemoRouter.init([])
+  defmodule DemoRouterWithPuttingCookie do
+    use Plug.Router
+
+    plug :match
+
+    plug PlugLocale.WebBrowser,
+      default_locale: "en",
+      locales: ["en", "zh-Hans"],
+      detect_locale_from: [:query, :cookie, :referrer, :accept_language]
+
+    plug :put_cookie
+
+    plug :dispatch
+
+    def put_cookie(conn, _opts) do
+      if locale = conn.assigns[:locale] do
+        PlugLocale.WebBrowser.put_locale_resp_cookie(conn, locale, max_age: 3600)
+      else
+        conn
+      end
+    end
+
+    get "/posts/:id" do
+      %{"id" => id} = conn.params
+      send_resp(conn, 200, "post: #{id}")
+    end
+
+    get "/:locale/posts/:id" do
+      %{"id" => id} = conn.params
+      %{locale: locale} = conn.assigns
+      send_resp(conn, 200, "post: #{locale} - #{id}")
+    end
+
+    match _ do
+      send_resp(conn, 404, "oops")
+    end
+  end
+
+  @opts []
 
   describe "path without locale" do
     test "is redirected to a detected path - default locale" do
@@ -184,6 +222,18 @@ defmodule PlugLocale.WebBrowserTest do
 
     assert log =~ ":query_params of conn is still unfetched"
     assert log =~ ":cookies of conn is still unfetched"
+  end
+
+  test "build_locale_path/2" do
+    conn = conn(:get, "/en/posts/7")
+    conn = DemoRouter.call(conn, @opts)
+    assert "/zh-Hans/posts/7" == PlugLocale.WebBrowser.build_locale_path(conn, "zh-Hans")
+  end
+
+  test "put_locale_resp_cookie/2" do
+    conn = conn(:get, "/en/posts/7")
+    conn = DemoRouterWithPuttingCookie.call(conn, @opts)
+    assert %Plug.Conn{cookies: %{"locale" => "en"}} = fetch_cookies(conn)
   end
 
   # credo:disable-for-next-line
