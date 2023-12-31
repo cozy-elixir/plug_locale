@@ -149,7 +149,7 @@ defmodule PlugLocale.Browser do
 
   Check out their docs for more details.
 
-  ### an example UI component - simple locale switcher
+  ### an example - a simple locale switcher using `build_locale_path/2`
 
   ```heex
   <ul>
