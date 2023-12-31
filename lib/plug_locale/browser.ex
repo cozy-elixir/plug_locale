@@ -274,12 +274,46 @@ defmodule PlugLocale.Browser do
   @doc """
   Puts a response cookie for locale in the connection.
 
-  See `Plug.Conn.put_resp_cookie/4` for more details.
+  This is a simple wrapper around `Plug.Conn.put_resp_cookie/4`. See its docs
+  for more details.
 
   ## Examples
 
       iex> put_locale_resp_cookie(conn, "en")
       iex> put_locale_resp_cookie(conn, "zh", max_age: 365 * 24 * 60 * 60)
+
+  ## Use cases
+
+  Use this function to persistent current locale into cookie, then subsequent
+  requests can directly read the locale from the cookie.
+
+      defmodule DemoWeb.PlugBrowserLocalization do
+        use Plug.Builder
+      
+        plug PlugLocale.Browser,
+          default_locale: "en",
+          locales: ["en", "zh"],
+          route_identifier: :locale,
+          assign_key: :locale
+      
+        plug :put_locale
+      
+        def put_locale(conn, _opts) do
+          if locale = conn.assigns[:locale] do
+            # integrate with gettext
+            Gettext.put_locale(locale)
+
+            # persistent current locale into cookie
+            PlugLocale.Browser.put_locale_resp_cookie(
+              conn,
+              locale,
+              max_age: 365 * 24 * 60 * 60
+            )
+          else
+            conn
+          end
+        end
+      end
 
   """
   @spec put_locale_resp_cookie(Plug.Conn.t(), String.t()) :: Plug.Conn.t()
