@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.4.0
 
 Breaking changes:
 
@@ -10,7 +10,7 @@ Breaking changes:
 
 New Features:
 
-- add `PlugLocale.WebBrowser.put_locale_resp_cookie/2` / `PlugLocale.WebBrowser.put_locale_resp_cookie/3`
+- add `PlugLocale.Browser.put_locale_resp_cookie/2` / `PlugLocale.Browser.put_locale_resp_cookie/3`
 
 ## v0.3.0
 
