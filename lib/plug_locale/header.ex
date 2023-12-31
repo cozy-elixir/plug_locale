@@ -63,8 +63,7 @@ defmodule PlugLocale.Header do
     * `:default_locale` - the default locale.
     * `:locales` - all the supported locales.
       Default to `[]`.
-    * `:cast_locale_by` - specify the function for casting extracted or
-      detected locales.
+    * `:cast_locale_by` - the function for casting extracted or detected locales.
       Default to `nil`.
     * `:header_name` - the header for getting locale.
       Default to `"x-client-locale"`.

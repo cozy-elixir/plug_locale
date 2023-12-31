@@ -87,12 +87,11 @@ defmodule PlugLocale.Browser do
     * `:default_locale` - the default locale.
     * `:locales` - all the supported locales.
       Default to `[]`.
-    * `:detect_locale_from` - specify *the sources* and *the order of sources*
-      for detecting locale.
+    * `:detect_locale_from` - *the sources* and *the order of sources* for
+      detecting locale.
       Available sources are `:query`, `:cookie`, `:referrer`, `:accept_language`.
       Default to `[:cookie, :referrer, :accept_language]`.
-    * `:cast_locale_by` - specify the function for casting extracted or
-      detected locales.
+    * `:cast_locale_by` - the function for casting extracted or detected locales.
       Default to `nil`.
     * `:route_identifier` - the part for identifying locale in route.
       Default to `:locale`.
