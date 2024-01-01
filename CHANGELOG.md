@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+New Features:
+
+- add `PlugLocale.Browser.build_locale_paths/1`
+- add `PlugLocale.Browser.build_locale_url/2`
+- add `PlugLocale.Browser.build_locale_urls/1`
+
+Enhancements:
+
+- consider forwarded requests when building the paths and urls
+
 ## v0.4.0
 
 Breaking changes:

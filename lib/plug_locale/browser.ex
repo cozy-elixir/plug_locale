@@ -249,7 +249,7 @@ defmodule PlugLocale.Browser do
   end
 
   @doc """
-  Builds a localized path for current path.
+  Builds a localized path for current connection.
 
   > Note: the locale passed to this function won't be casted by the function
   > which is specified by `:cast_locale_by` option.
@@ -269,6 +269,73 @@ defmodule PlugLocale.Browser do
   def build_locale_path(%Plug.Conn{} = conn, locale) do
     %{config: config} = Map.fetch!(conn.private, @private_key)
     __build_locale_path__(conn, config, locale)
+  end
+
+  @doc """
+  Builds all possible localized paths for current connection.
+
+  ## Examples
+    
+      # the request path of conn is /posts/7
+      iex> build_locale_paths(conn)
+      ["/en/posts/7", "/zh/posts/7"]
+
+  """
+  @spec build_locale_paths(Plug.Conn.t()) :: [String.t()]
+  def build_locale_paths(%Plug.Conn{} = conn) do
+    %{config: config} = Map.fetch!(conn.private, @private_key)
+
+    Enum.map(config.locales, fn locale ->
+      __build_locale_path__(conn, config, locale)
+    end)
+  end
+
+  @doc """
+  Builds a localized url for current connection.
+
+  > Note: the locale passed to this function won't be casted by the function
+  > which is specified by `:cast_locale_by` option.
+
+  ## Examples
+
+      # the request path of conn is /posts/7
+      iex> build_locale_path(conn, "en")
+      "http://www.example.com/en/posts/7"
+
+      # the request path of conn is /en/posts/7
+      iex> build_locale_path(conn, "zh")
+      "http://www.example.com/zh/posts/7"
+
+  """
+  @spec build_locale_url(Plug.Conn.t(), String.t()) :: String.t()
+  def build_locale_url(%Plug.Conn{} = conn, locale) do
+    %{config: config} = Map.fetch!(conn.private, @private_key)
+
+    %{scheme: scheme, host: host, port: port, query_string: query} = conn
+    path = __build_locale_path__(conn, config, locale)
+    build_url(scheme, host, port, path, query)
+  end
+
+  @doc """
+  Builds all possible localized urls for current connection.
+
+  ## Examples
+    
+      # the request path of conn is /posts/7
+      iex> build_locale_paths(conn)
+      ["http://www.example.com/en/posts/7", "http://www.example.com/zh/posts/7"]
+
+  """
+  @spec build_locale_urls(Plug.Conn.t()) :: [String.t()]
+  def build_locale_urls(%Plug.Conn{} = conn) do
+    %{config: config} = Map.fetch!(conn.private, @private_key)
+
+    %{scheme: scheme, host: host, port: port, query_string: query} = conn
+
+    Enum.map(config.locales, fn locale ->
+      path = __build_locale_path__(conn, config, locale)
+      build_url(scheme, host, port, path, query)
+    end)
   end
 
   @doc """
@@ -351,8 +418,10 @@ defmodule PlugLocale.Browser do
          config,
          locale
        ) do
+    %{script_name: script_name} = conn
     route_info = phoenix_route_info(router, conn)
-    convert_route_info_to_locale_path(route_info, conn, config, locale)
+    path_info = convert_route_info_to_path_info(route_info, conn, config, locale)
+    build_path(script_name ++ path_info)
   end
 
   # support for Plug
@@ -361,15 +430,18 @@ defmodule PlugLocale.Browser do
          config,
          locale
        ) do
+    %{script_name: script_name} = conn
     route_info = plug_route_info(conn)
-    convert_route_info_to_locale_path(route_info, conn, config, locale)
+    path_info = convert_route_info_to_path_info(route_info, conn, config, locale)
+    build_path(script_name ++ path_info)
   end
 
   defp __build_locale_path__(%Plug.Conn{} = conn, _config, locale) do
-    build_path([locale | conn.path_info])
+    %{path_info: path_info, script_name: script_name} = conn
+    build_path(script_name ++ [locale | path_info])
   end
 
-  defp convert_route_info_to_locale_path(
+  defp convert_route_info_to_path_info(
          %{
            path_info: route_path_info,
            path_params: route_path_params
@@ -383,19 +455,26 @@ defmodule PlugLocale.Browser do
     if is_locale_path? do
       path_params = Map.put(route_path_params, config.path_param_key, locale)
 
-      path_info =
-        Enum.map(
-          route_path_info,
-          fn
-            ":" <> seg -> Map.fetch!(path_params, seg)
-            seg -> seg
-          end
-        )
-
-      build_path(path_info)
+      Enum.map(route_path_info, fn
+        ":" <> seg -> Map.fetch!(path_params, seg)
+        seg -> seg
+      end)
     else
-      build_path([locale | conn.path_info])
+      [locale | conn.path_info]
     end
+  end
+
+  defp build_url(scheme, host, port, path, query) do
+    scheme = to_string(scheme)
+    query = if query == "", do: nil, else: query
+
+    to_string(%URI{
+      scheme: scheme,
+      host: host,
+      port: port,
+      path: path,
+      query: query
+    })
   end
 
   defp build_path(path_info) when is_list(path_info) do
