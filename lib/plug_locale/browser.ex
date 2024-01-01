@@ -18,9 +18,10 @@ defmodule PlugLocale.Browser do
        * `https://example.com/welcome?locale=en`
        * `https://example.com/welcome?locale=zh`
 
-  Method 1 and method 2 are tedious for deployment.
+  Method 1 and method 2 work, but they are complicated to set up and tedious
+  to maintain.
 
-  Method 4 is ugly and unprofessional.
+  Method 4 isn't recommended. It is ugly and will confuse search engines.
 
   Personally, I think method 3 strikes a good balance between professionalism
   and convenience. Because of that, this plug will stick on method 3.
