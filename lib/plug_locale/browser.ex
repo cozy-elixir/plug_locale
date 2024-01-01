@@ -295,8 +295,10 @@ defmodule PlugLocale.Browser do
   def build_locale_url(%Plug.Conn{} = conn, locale) do
     %{config: config} = Map.fetch!(conn.private, @private_key)
 
-    %{scheme: scheme, host: host, port: port, query_string: query} = conn
+    %{scheme: scheme, host: host, port: port} = __extra_base_url_parts__(conn)
+    %{query_string: query} = conn
     path = __build_locale_path__(conn, config, locale)
+
     build_url(scheme, host, port, path, query)
   end
 
@@ -372,6 +374,17 @@ defmodule PlugLocale.Browser do
     conn
     |> redirect_to(path)
     |> halt()
+  end
+
+  # support for Phoenix
+  defp __extra_base_url_parts__(%Plug.Conn{private: %{phoenix_endpoint: endpoint}}) do
+    endpoint.struct_url()
+    |> Map.take([:scheme, :host, :port])
+  end
+
+  # support for Plug
+  defp __extra_base_url_parts__(%Plug.Conn{} = conn) do
+    Map.take(conn, [:scheme, :host, :port])
   end
 
   # support for Phoenix

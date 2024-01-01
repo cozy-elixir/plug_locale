@@ -1,6 +1,14 @@
 # Changelog
 
+## v0.5.0
+
+Enhancements:
+
+- consider Phoenix endpoint configuration when building the urls
+
 ## v0.4.3
+
+> This should be released as v0.5.0, but I made a mistake.
 
 New Features:
 
