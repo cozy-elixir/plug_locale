@@ -230,26 +230,12 @@ defmodule PlugLocale.BrowserTest do
     assert "/zh-Hans/posts/7" == PlugLocale.Browser.build_locale_path(conn, "zh-Hans")
   end
 
-  test "build_locale_paths/1" do
-    conn = conn(:get, "/en/posts/7")
-    conn = DemoRouter.call(conn, @opts)
-    assert ["/en/posts/7", "/zh-Hans/posts/7"] == PlugLocale.Browser.build_locale_paths(conn)
-  end
-
   test "build_locale_url/2" do
     conn = conn(:get, "/en/posts/7")
     conn = DemoRouter.call(conn, @opts)
 
     assert "http://www.example.com/zh-Hans/posts/7" ==
              PlugLocale.Browser.build_locale_url(conn, "zh-Hans")
-  end
-
-  test "build_locale_urls/1" do
-    conn = conn(:get, "/en/posts/7")
-    conn = DemoRouter.call(conn, @opts)
-
-    assert ["http://www.example.com/en/posts/7", "http://www.example.com/zh-Hans/posts/7"] ==
-             PlugLocale.Browser.build_locale_urls(conn)
   end
 
   test "put_locale_resp_cookie/2" do

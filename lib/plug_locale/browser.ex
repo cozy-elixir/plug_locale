@@ -275,25 +275,6 @@ defmodule PlugLocale.Browser do
   end
 
   @doc """
-  Builds all possible localized paths for current connection.
-
-  ## Examples
-    
-      # the request path of conn is /posts/7
-      iex> build_locale_paths(conn)
-      ["/en/posts/7", "/zh/posts/7"]
-
-  """
-  @spec build_locale_paths(Plug.Conn.t()) :: [String.t()]
-  def build_locale_paths(%Plug.Conn{} = conn) do
-    %{config: config} = Map.fetch!(conn.private, @private_key)
-
-    Enum.map(config.locales, fn locale ->
-      __build_locale_path__(conn, config, locale)
-    end)
-  end
-
-  @doc """
   Builds a localized url for current connection.
 
   > Note: the locale passed to this function won't be casted by the function
@@ -317,28 +298,6 @@ defmodule PlugLocale.Browser do
     %{scheme: scheme, host: host, port: port, query_string: query} = conn
     path = __build_locale_path__(conn, config, locale)
     build_url(scheme, host, port, path, query)
-  end
-
-  @doc """
-  Builds all possible localized urls for current connection.
-
-  ## Examples
-    
-      # the request path of conn is /posts/7
-      iex> build_locale_paths(conn)
-      ["http://www.example.com/en/posts/7", "http://www.example.com/zh/posts/7"]
-
-  """
-  @spec build_locale_urls(Plug.Conn.t()) :: [String.t()]
-  def build_locale_urls(%Plug.Conn{} = conn) do
-    %{config: config} = Map.fetch!(conn.private, @private_key)
-
-    %{scheme: scheme, host: host, port: port, query_string: query} = conn
-
-    Enum.map(config.locales, fn locale ->
-      path = __build_locale_path__(conn, config, locale)
-      build_url(scheme, host, port, path, query)
-    end)
   end
 
   @doc """

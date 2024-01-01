@@ -4,9 +4,7 @@
 
 New Features:
 
-- add `PlugLocale.Browser.build_locale_paths/1`
 - add `PlugLocale.Browser.build_locale_url/2`
-- add `PlugLocale.Browser.build_locale_urls/1`
 
 Enhancements:
 
