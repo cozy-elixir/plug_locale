@@ -193,8 +193,8 @@ defmodule PlugLocale.Browser do
 
     * query (whose key is specified by `:query_key` option)
     * cookie (whose key is specified by `:cookie_key` option)
-    * HTTP request header - `referer`
-    * HTTP request header - `accept-language`
+    * HTTP request header - `Referer`
+    * HTTP request header - `Accept-Language`
 
   If all detections fail, fallback to default locale.
 
