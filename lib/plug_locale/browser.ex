@@ -91,8 +91,12 @@ defmodule PlugLocale.Browser do
     * `:default_locale` - the default locale.
     * `:locales` - all the supported locales.
       Default to `[]`.
-    * `:detect_locale_from` - *the sources* and *the order of sources* for
-      detecting locale.
+    * `:fetch_locale_from` - *the sources* and *the order of sources* for
+      fetching initial locale.
+      Available sources are `:path`, `:query`.
+      Default to `[:path]`.
+    * `:fallback_locale_from` - *the sources* and *the order of sources* for
+      fallbacking locale.
       Available sources are `:query`, `:cookie`, `:referrer`, `:accept_language`.
       Default to `[:cookie, :referrer, :accept_language]`.
     * `:cast_locale_by` - the function for casting extracted or detected locales.
@@ -242,13 +246,25 @@ defmodule PlugLocale.Browser do
 
   @impl true
   def call(%Plug.Conn{} = conn, config) do
-    locale = Map.get(conn.path_params, config.path_param_key)
-    casted_locale = cast_locale(config, locale)
+    conn = put_private(conn, @private_key, %{config: config})
 
-    if locale && casted_locale && locale == casted_locale do
-      continue(conn, config, locale)
+    locale =
+      Enum.reduce_while(config.fetch_locale_from, nil, fn source, _acc ->
+        if locale = detect_locale(source, conn, config),
+          do: {:halt, locale},
+          else: {:cont, nil}
+      end)
+
+    if locale do
+      casted_locale = cast_locale(config, locale)
+
+      if casted_locale && casted_locale == locale do
+        continue(conn, config, locale)
+      else
+        fallback(conn, config)
+      end
     else
-      fallback(conn, config)
+      default(conn, config)
     end
   end
 
@@ -355,14 +371,16 @@ defmodule PlugLocale.Browser do
   end
 
   defp continue(conn, config, locale) do
-    conn
-    |> put_private(@private_key, %{config: config})
-    |> assign(config.assign_key, locale)
+    assign(conn, config.assign_key, locale)
+  end
+
+  defp default(conn, config) do
+    assign(conn, config.assign_key, config.default_locale)
   end
 
   defp fallback(conn, config) do
     locale =
-      Enum.reduce_while(config.detect_locale_from, nil, fn source, _acc ->
+      Enum.reduce_while(config.fallback_locale_from, nil, fn source, _acc ->
         if locale = detect_locale(source, conn, config),
           do: {:halt, locale},
           else: {:cont, nil}
@@ -509,6 +527,10 @@ defmodule PlugLocale.Browser do
       content_type = content_type <> "; charset=utf-8"
       %Plug.Conn{conn | resp_headers: [{"content-type", content_type} | resp_headers]}
     end
+  end
+
+  defp detect_locale(:path, conn, config) do
+    conn.path_params[config.path_param_key]
   end
 
   defp detect_locale(:query, %Plug.Conn{query_params: %Plug.Conn.Unfetched{}}, _config) do

@@ -10,7 +10,11 @@ defmodule PlugLocale.Browser.Config do
       type: {:list, :string},
       default: []
     ],
-    detect_locale_from: [
+    fetch_locale_from: [
+      type: {:list, {:in, [:path, :query]}},
+      default: [:path]
+    ],
+    fallback_locale_from: [
       type: {:list, {:in, [:query, :cookie, :referrer, :accept_language]}},
       default: [:cookie, :referrer, :accept_language]
     ],

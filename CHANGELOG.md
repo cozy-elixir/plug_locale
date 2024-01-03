@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.6.0
+
+Breaking changes:
+
+- rename `:detect_locale_from` option to `:fallback_locale_from`
+
+New Features:
+
+- add `:fetch_locale_from` option
+
 ## v0.5.0
 
 Enhancements:
