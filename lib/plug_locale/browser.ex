@@ -457,6 +457,8 @@ defmodule PlugLocale.Browser do
     "/" <> Enum.join(path_info, "/")
   end
 
+  defp build_path_info(nil), do: []
+
   defp build_path_info(path) when is_binary(path) do
     String.split(path, "/", trim: true)
   end

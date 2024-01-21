@@ -180,16 +180,28 @@ defmodule PlugLocale.BrowserTest do
       assert conn.resp_body =~ "\"/zh-Hans/posts/7\""
     end
 
-    test "is redirected to a path detected from referrer header" do
+    test "is redirected to a path detected from referrer header - detect locale from standard path" do
       conn =
         conn(:get, "/unknown-locale/posts/7")
-        |> put_req_header("referer", "/zh-Hans/origin")
+        |> put_req_header("referer", "http://example.com/zh-Hans/origin")
 
       conn = DemoRouter.call(conn, @opts)
 
       assert conn.status == 302
       assert conn.assigns[:locale] == nil
       assert conn.resp_body =~ "\"/zh-Hans/posts/7\""
+    end
+
+    test "is redirected to a path detected from referrer header - fallback to default locale for non-standard path" do
+      conn =
+        conn(:get, "/unknown-locale/posts/7")
+        |> put_req_header("referer", "http://example.com")
+
+      conn = DemoRouter.call(conn, @opts)
+
+      assert conn.status == 302
+      assert conn.assigns[:locale] == nil
+      assert conn.resp_body =~ "\"/en/posts/7\""
     end
 
     test "is redirected to a path detected from accept-language header" do
