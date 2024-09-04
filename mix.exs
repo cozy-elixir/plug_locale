@@ -9,7 +9,7 @@ defmodule PlugLocale.MixProject do
     [
       app: :plug_locale,
       version: @version,
-      elixir: "~> 1.12",
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       description: @description,
@@ -33,7 +33,7 @@ defmodule PlugLocale.MixProject do
     [
       {:plug, "~> 1.14"},
       {:nimble_options, "~> 1.0"},
-      {:ex_check, "~> 0.15.0", only: [:dev], runtime: false},
+      {:ex_check, ">= 0.0.0", only: [:dev], runtime: false},
       {:credo, ">= 0.0.0", only: [:dev], runtime: false},
       {:dialyxir, ">= 0.0.0", only: [:dev], runtime: false},
       {:ex_doc, ">= 0.0.0", only: [:dev], runtime: false},
